@@ -1,0 +1,45 @@
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  # Unique key of the Deployment instance
+  name: prime
+spec:
+  # Do not reset replicas back to 1 instead use the existing amount of replicas
+  # replicas: 1
+  # Determines how to find the deployment when updating it
+  selector:
+    matchLabels:
+      app: prime
+  template:
+    metadata:
+      labels:
+        # Apply this label to pods and default
+        # the Deployment label selector to this value
+        app: prime
+        version: prime-v2
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: version
+                operator: In
+                values:
+                - prime-v2
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: prime 
+        # Run this image
+        image: docker.io/razakal/prime:prime-v2
+        # Do not reuse cached images
+        imagePullPolicy: Always
+        ports:
+          # Open port 8080 TCP on the containers
+        - containerPort: 8080
+        # Cpu and Memory requirements
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 50Mi
